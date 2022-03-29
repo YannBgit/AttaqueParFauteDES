@@ -39,4 +39,4 @@ gdb: compile
 ### Archivage ###
 archive: clean
 	cd ../..
-	tar -czvf AttaqueFauteDES.tar.gz AttaqueFauteDES
+	tar -czvf BARBIER_Yann_21800844_AttaqueFauteDES.tar.gz AttaqueFauteDES

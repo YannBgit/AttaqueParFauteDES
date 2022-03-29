@@ -17,7 +17,7 @@ unsigned long int extractionDuClair(FILE *fic)
 
         if(trigger > 0)
         {
-            clair = strtoul(line, NULL, base);
+            clair = strtoul(line, NULL, BASE);
 
             break;
         }
@@ -45,7 +45,7 @@ unsigned long int extractionDuCB(FILE *fic)
 
         if(trigger > 0)
         {
-            CB = strtoul(line, NULL, base);
+            CB = strtoul(line, NULL, BASE);
             
             break;
         }
@@ -61,7 +61,7 @@ unsigned long int extractionDuCB(FILE *fic)
 
 unsigned long int *extractionDesCF(FILE *fic)
 {
-    unsigned long int *TabCF = malloc(sizeof(unsigned long int) * nbDeCF);
+    unsigned long int *TabCF = malloc(sizeof(unsigned long int) * NOMBRE_CF);
 
     char *line = NULL;
     size_t n = 0;
@@ -73,9 +73,9 @@ unsigned long int *extractionDesCF(FILE *fic)
 
         if(trigger > 0)
         {
-            for(int i = 0; i < nbDeCF; i++)
+            for(int i = 0; i < NOMBRE_CF; i++)
             {
-                TabCF[i] = strtoul(line, NULL, base);
+                TabCF[i] = strtoul(line, NULL, BASE);
 
                 n = getline(&line, &n, fic);
             }

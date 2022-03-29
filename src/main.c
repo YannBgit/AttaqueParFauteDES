@@ -1,8 +1,10 @@
 // LIBRAIRIES
 #include "constantes.h"
 #include "gestionnaireDeFichiers.h"
+#include "rechercheDES.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 // FONCTIONS
 
@@ -19,27 +21,32 @@ int main()
         exit(0);
     }
 
-    unsigned long int clair = extractionDuClair(fic);
-    unsigned long int CB = extractionDuCB(fic);
-	unsigned long int *TabCF = extractionDesCF(fic);
+    uint64_t clair = extractionDuClair(fic);       // Message clair
+    uint64_t chiffre = extractionDuchiffre(fic);   // Chiffré correct
+	uint64_t *chiffresFaux = extractionDesCF(fic); // Tableau des chiffrés faux
+    uint64_t K16;                                  // Sous-clé K16
+    uint64_t K;                                    // Clé maître K
 
     fclose(fic);
 
     // Affichage initial
+    printf("Clair :\t %lx\nChiffré bon :\t %lx\n\n", clair, chiffre);
 
-    printf("Clair :\t %lx\nChiffré bon :\t %lx\n\n", clair, CB);
-
-    for(int i = 0; i < nbDeCF; i++)
+    for(int i = 0; i < NOMBRE_CF; i++)
     {
-        printf("Chiffré faux n°%d :\t %lx\n", i, TabCF[i]);
+        printf("Chiffré faux n°%d :\t %lx\n", i, chiffresFaux[i]);
     }
 
     // Calculs
+    K16 = rechercheK16(clair, chiffre, chiffresFaux);
+    K = rechercheK(clair, chiffre, K16);
 
-    
+    // Affichage final
+    printf("\nValeur de K16 : %lx\n", K16);
+    printf("\nValeur de K : %lx\n", K);
 
     // Fin
-    free(TabCF);
+    free(chiffresFaux);
 
     exit(0);
 }
