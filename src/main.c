@@ -32,7 +32,7 @@ int main()
     // Affichage initial
     printf("Clair :\t %lx\nChiffré bon :\t %lx\n\n", clair, chiffre);
 
-    for(int i = 0; i < NOMBRE_CF; i++)
+    for(int i = 0; i < NOMBRE_CHIFFRES_FAUX; i++)
     {
         printf("Chiffré faux n°%d :\t %lx\n", i, chiffresFaux[i]);
     }

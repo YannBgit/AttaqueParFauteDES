@@ -6,8 +6,34 @@
 uint64_t cadencementCles(uint64_t K)
 {
 	uint64_t *sousCles = malloc(sizeof(uint64_t) * NOMBRE_TOURS);
+	uint64_t *c = malloc(sizeof(uint64_t) * NOMBRE_TOURS);
+	uint64_t *d = malloc(sizeof(uint64_t) * NOMBRE_TOURS);
+	uint64_t K56 = PC1(K);
+	uint64_t KL = separationCles(K56);
+	uint64_t KR = KL;
 
+	/*subkeys = [0] * 16
+    C = [0] * 16
+    D = [0] * 16
+    K_56 = PC1(K) # on ignore les 8*i bits
+    K_left, K_right = split_keys(K_56)
+    C, D = circular_left_shift(C, D, K_left, K_right)
+    for i in range(16):
+        subkeys[i] = C[i] + D[i]
+        subkeys[i] = PC2(subkeys[i])*/
 
+	for(int i = 0; i < NOMBRE_TOURS; i++)
+	{
+		sousCles[i] = 0;
+		c[i] = 0;
+		d[i] = 0;
+	}
+
+	for(int i = 0; i < NOMBRE_CHIFFRES_FAUX; i++)
+	{
+		sousCles[i] = c[i] + d[i];
+		sousCles[i] = PC2(sousCles[i]);
+	}
 
 	return sousCles;
 }
