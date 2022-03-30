@@ -10,7 +10,7 @@
 
 // FONCTIONS
 unsigned long int extractionDuClair(FILE *fic);
-unsigned long int extractionDuCB(FILE *fic);
-unsigned long int *extractionDesCF(FILE *fic);
+unsigned long int extractionDuChiffreBon(FILE *fic);
+unsigned long int *extractionDesChiffresFaux(FILE *fic);
 
 #endif

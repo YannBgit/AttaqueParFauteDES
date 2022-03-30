@@ -31,9 +31,9 @@ unsigned long int extractionDuClair(FILE *fic)
     return clair;
 }
 
-unsigned long int extractionDuCB(FILE *fic)
+unsigned long int extractionDuChiffreBon(FILE *fic)
 {
-    unsigned long int CB = 0x0;
+    unsigned long int chiffreBon = 0x0;
 
     char *line = NULL;
     size_t n = 0;
@@ -45,7 +45,7 @@ unsigned long int extractionDuCB(FILE *fic)
 
         if(trigger > 0)
         {
-            CB = strtoul(line, NULL, BASE);
+            chiffreBon = strtoul(line, NULL, BASE);
             
             break;
         }
@@ -56,12 +56,12 @@ unsigned long int extractionDuCB(FILE *fic)
         }
     }
 
-    return CB;
+    return chiffreBon;
 }
 
-unsigned long int *extractionDesCF(FILE *fic)
+unsigned long int *extractionDesChiffresFaux(FILE *fic)
 {
-    unsigned long int *TabCF = malloc(sizeof(unsigned long int) * NOMBRE_CF);
+    unsigned long int *chiffresFaux = malloc(sizeof(unsigned long int) * NOMBRE_CHIFFRES_FAUX);
 
     char *line = NULL;
     size_t n = 0;
@@ -73,9 +73,9 @@ unsigned long int *extractionDesCF(FILE *fic)
 
         if(trigger > 0)
         {
-            for(int i = 0; i < NOMBRE_CF; i++)
+            for(int i = 0; i < NOMBRE_CHIFFRES_FAUX; i++)
             {
-                TabCF[i] = strtoul(line, NULL, BASE);
+                chiffresFaux[i] = strtoul(line, NULL, BASE);
 
                 n = getline(&line, &n, fic);
             }
@@ -89,5 +89,5 @@ unsigned long int *extractionDesCF(FILE *fic)
         }
     }
 
-    return TabCF;
+    return chiffresFaux;
 }

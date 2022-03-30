@@ -1,7 +1,7 @@
 // LIBRAIRIES
 #include "constantes.h"
 #include "gestionnaireDeFichiers.h"
-#include "rechercheDES.h"
+#include "attaqueDES.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -21,11 +21,11 @@ int main()
         exit(0);
     }
 
-    uint64_t clair = extractionDuClair(fic);       // Message clair
-    uint64_t chiffre = extractionDuchiffre(fic);   // Chiffré correct
-	uint64_t *chiffresFaux = extractionDesCF(fic); // Tableau des chiffrés faux
-    uint64_t K16;                                  // Sous-clé K16
-    uint64_t K;                                    // Clé maître K
+    uint64_t clair = extractionDuClair(fic);                    // Message clair
+    uint64_t chiffre = extractionDuChiffreBon(fic);                // Chiffré correct
+	uint64_t *chiffresFaux = extractionDesChiffresFaux(fic);    // Tableau des chiffrés faux
+    uint64_t K16;                                               // Sous-clé K16
+    uint64_t K;                                                 // Clé maître K
 
     fclose(fic);
 
@@ -38,12 +38,12 @@ int main()
     }
 
     // Calculs
-    K16 = rechercheK16(clair, chiffre, chiffresFaux);
+    K16 = rechercheK16(chiffre, chiffresFaux);
     K = rechercheK(clair, chiffre, K16);
 
     // Affichage final
     printf("\nValeur de K16 : %lx\n", K16);
-    printf("\nValeur de K : %lx\n", K);
+    printf("Valeur de K : %lx\n", K);
 
     // Fin
     free(chiffresFaux);
