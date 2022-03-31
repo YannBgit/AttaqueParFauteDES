@@ -23,7 +23,7 @@ void SboxFonction(bool *resultat, bool *entree, uint8_t numSbox)
 	uint64EnBin(resultat, resultat4bit, 1);
 }
 
-void obtenirR15L15(uint64_t uint64, Message *m)
+void obtenirR16L16(uint64_t uint64, Message *m)
 {
 	m->chiffreUint64 = uint64;
 	uint64EnBin(m->chiffreBin, uint64, BASE);
@@ -32,7 +32,7 @@ void obtenirR15L15(uint64_t uint64, Message *m)
 	
 }
 
-uint64_t K15EnUint64(int TK15[][TAILLE_BLOC])
+uint64_t K16EnUint64(int TK16[][TAILLE_BLOC])
 {
 	int T[NOMBRE_SBOXES] = {0};
 	bool cles[TAILLE_ENTREE_SBOX] = {0};
@@ -42,7 +42,7 @@ uint64_t K15EnUint64(int TK15[][TAILLE_BLOC])
     {
 		for(int j = 0; j < TAILLE_BLOC; j++)
         {
-			if(TK15[i][j] == TAILLE_ENTREE_SBOX)
+			if(TK16[i][j] == TAILLE_ENTREE_SBOX)
             {
                 T[i] = j;
             }
@@ -106,14 +106,14 @@ void F(bool *resultat, bool *Ri, bool *Ki)
 	permutation(resultat, sortie32Bin, P, TAILLE_DEMI_BLOC);
 }
 
-uint64_t fonctionDES(uint64_t clair, uint64_t k64)
+uint64_t fonctionDES(uint64_t clair, uint64_t K64Bin)
 {
 	DES d;
 	bool resultatF[TAILLE_DEMI_BLOC] = {0};
 	bool resultatConcat[TAILLE_BLOC] = {0};
 
 	uint64EnBin(d.clairBin, clair, BASE);
-	uint64EnBin(d.cle64Bin, k64, BASE);
+	uint64EnBin(d.cle64Bin, K64Bin, BASE);
 	permutation(d.clairBinIP, d.clairBin, IP, TAILLE_BLOC);
 	separationT(d.clairBinIP, d.L32Bin, d.R32Bin, TAILLE_DEMI_BLOC);
 	generationSousCles(d.sousCles, d.cle64Bin);
@@ -133,7 +133,7 @@ uint64_t fonctionDES(uint64_t clair, uint64_t k64)
 	return TEnUint64(d.chiffreBin, TAILLE_BLOC);
 }
 
-uint64_t rechercheK15(uint64_t chiffreCorrect, uint64_t *chiffresFaux)
+uint64_t rechercheK16(uint64_t chiffreCorrect, uint64_t *chiffresFaux)
 {
 	Message juste;
 	Message faux;
@@ -141,11 +141,11 @@ uint64_t rechercheK15(uint64_t chiffreCorrect, uint64_t *chiffresFaux)
 	bool LPinverse[TAILLE_DEMI_BLOC] = {0};
 	bool resultatXorL[TAILLE_DEMI_BLOC] = {0};
 
-	obtenirR15L15(chiffreCorrect, &juste);
+	obtenirR16L16(chiffreCorrect, &juste);
 
 	for(int w = 0; w < TAILLE_DEMI_BLOC; w++)
     {
-		obtenirR15L15(chiffresFaux[w], &faux);
+		obtenirR16L16(chiffresFaux[w], &faux);
 		xor(resultatXorL, juste.LChiffreBin, faux.LChiffreBin, TAILLE_DEMI_BLOC);
 		permutation(LPinverse, resultatXorL, Pinverse, TAILLE_DEMI_BLOC);
 
@@ -188,17 +188,17 @@ uint64_t rechercheK15(uint64_t chiffreCorrect, uint64_t *chiffresFaux)
 		}
 	}
 
-	return K15EnUint64(resultat);
+	return K16EnUint64(resultat);
 }
 
-uint64_t rechercheK56Bits(uint64_t clair, uint64_t chiffre, uint64_t K15)
+uint64_t rechercheK56Bits(uint64_t clair, uint64_t chiffre, uint64_t K16)
 {
 	Cle k;
 
 	initT(k.cle48Bin, TAILLE_SOUS_CLE);
 	initT(k.cle56Bin, TAILLE_CLE_MAITRE_SANS_PARITE);
 	initT(k.cle64Bin, TAILLE_BLOC);
-	uint64EnBin(k.cle48Bin, K15,12);
+	uint64EnBin(k.cle48Bin, K16,12);
 	permutation(k.cle56Bin, k.cle48Bin, PC2Inverse, 56);
 	permutation(k.cle64Bin, k.cle56Bin, PC1Inverse, 64);
 
@@ -224,12 +224,12 @@ uint64_t rechercheK56Bits(uint64_t clair, uint64_t chiffre, uint64_t K15)
 	return 0;
 }
 
-uint64_t rechercheK(uint64_t clair, uint64_t chiffre, uint64_t K15)
+uint64_t rechercheK(uint64_t clair, uint64_t chiffre, uint64_t K16)
 {
 	int compteur = 0;
 	bool clesB[TAILLE_BLOC] = {0};
 
-	uint64EnBin(clesB, rechercheK56Bits(clair, chiffre, K15), BASE);
+	uint64EnBin(clesB, rechercheK56Bits(clair, chiffre, K16), BASE);
 
 	for(int i = 1; i < (TAILLE_BLOC + 1); i++)
     {

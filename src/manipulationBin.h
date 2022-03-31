@@ -22,6 +22,5 @@ void initT(bool *T, uint8_t nombreBits);
 void decalageGauche(bool *resultat, bool *TaShift, uint8_t nombreShifts, uint8_t nombreBits);
 uint64_t bitFaute(bool *correcteT, bool *fauxT);
 void fusionT(bool *resultat, bool *LT, bool *RT, uint8_t nombreBits);
-void copieT(bool *resultat, bool *aCopier, uint8_t nombreBits);
 
 #endif

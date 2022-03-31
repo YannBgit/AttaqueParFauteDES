@@ -147,11 +147,3 @@ void fusionT(bool *resultat, bool *LT, bool *RT, uint8_t nombreBits)
 		resultat[i + nombreBits] = RT[i];
 	}
 }
-
-void copieT(bool *resultat, bool *aCopier, uint8_t nombreBits)
-{
-	for(int i = 0; i < nombreBits; i++)
-    {
-		resultat[i] = aCopier[i];
-	}
-}
