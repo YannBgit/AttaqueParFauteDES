@@ -29,7 +29,6 @@ void obtenirR16L16(uint64_t uint64, Message *m)
 	uint64EnBin(m->chiffreBin, uint64, BASE);
 	permutation(m->chiffreBinPermute, m->chiffreBin, IP, TAILLE_BLOC);
 	separationT(m->chiffreBinPermute, m->LChiffreBin, m->RChiffreBin, TAILLE_DEMI_BLOC);
-	
 }
 
 uint64_t K16EnUint64(int TK16[][TAILLE_BLOC])
