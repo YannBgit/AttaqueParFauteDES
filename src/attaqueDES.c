@@ -2,9 +2,9 @@
 #include "attaqueDES.h"
 
 // FONCTIONS
-void hexEnBin(bool *resultatTab, uint64_t hex, uint8_t nombreBits)
+void uint64EnBin(bool *resultatTab, uint64_t uint64, uint8_t nombreBits)
 {
-	uint64_t tmp = hex;
+	uint64_t tmp = uint64;
 	int entier;
 	int compteur = nombreBits * 4 - 1;
 
@@ -23,7 +23,7 @@ void hexEnBin(bool *resultatTab, uint64_t hex, uint8_t nombreBits)
 	}
 }
 
-void decimalEnBin(bool *resultatTab, uint64_t decimal, uint8_t nombreBits)
+void decimalEnBin(bool *resultatTab, int decimal, uint8_t nombreBits)
 {
 	uint64_t entier = decimal;
 
@@ -34,13 +34,13 @@ void decimalEnBin(bool *resultatTab, uint64_t decimal, uint8_t nombreBits)
 	}
 }
 
-uint64_t tabEnHex(bool *tab, uint8_t nombreBits)
+uint64_t tabEnUint64(bool *tab, uint8_t nombreBits)
 {	
 	uint64_t nombre = 0;
 
 	for (int i = 0; i < nombreBits; i++)
     {
-        if (tab[i])
+        if(tab[nombreBits - i - 1] != 0)
 		{
 			nombre += (uint64_t)pow((double)2, (double)i);
 		}
@@ -77,7 +77,7 @@ void xor(bool *resultatTab, bool *tab1, bool *tab2, uint8_t nombreBits)
 	}
 }
 
-uint8_t bitFaute(bool *correcteTab, bool *fauxTab)
+uint64_t bitFaute(bool *correcteTab, bool *fauxTab)
 {
 	bool xorTab[33] = {0};
 
@@ -114,13 +114,13 @@ void SboxFonction(bool *resultat, bool *entree, uint8_t numSbox)
 
 	uint8_t resultat4bit = Sbox[numSbox][row][column];
 
-	hexEnBin(resultat, resultat4bit, 1);
+	uint64EnBin(resultat, resultat4bit, 1);
 }
 
-void obtenirR16L16(uint64_t hex, Message *m)
+void obtenirR16L16(uint64_t uint64, Message *m)
 {
-	m->chiffreHex = hex;
-	hexEnBin(m->chiffreBin, hex, BASE);
+	m->chiffreuint64 = uint64;
+	uint64EnBin(m->chiffreBin, uint64, BASE);
 	permutation(m->chiffreBinPermute, m->chiffreBin, IP, TAILLE_BLOC);
 	separationTab(m->chiffreBinPermute, m->LChiffreBin, m->RChiffreBin, TAILLE_DEMI_BLOC);
 	
@@ -147,7 +147,7 @@ bool tabEgaux(bool *tab1, bool *tab2, uint8_t nombreBits)
 	return 1;
 }
 
-uint64_t K16EnHex(int tabK16[8][64])
+uint64_t K16EnUint64(int tabK16[8][64])
 {
 	int tab[8] = {0};
 	bool cles[6] = {0};
@@ -155,7 +155,7 @@ uint64_t K16EnHex(int tabK16[8][64])
 
 	for(int i = 0; i < 8; i++)
     {
-		for(int j = 0; j < 64; j++)
+		for(int j = 0; j < TAILLE_BLOC; j++)
         {
 			if(tabK16[i][j] == 6)
             {
@@ -163,7 +163,6 @@ uint64_t K16EnHex(int tabK16[8][64])
             }
 		}
 
-		printf("%d\n", tab[i]);
 		decimalEnBin(cles, tab[i], 6);
 
 		for(int j = 0; j < 6; j++)
@@ -172,7 +171,7 @@ uint64_t K16EnHex(int tabK16[8][64])
 		}
 	}
 
-	return tabEnHex(resultatTab, TAILLE_SOUS_CLE);
+	return tabEnUint64(resultatTab, TAILLE_SOUS_CLE);
 }
 
 uint64_t rechercheK16(uint64_t chiffreCorrect, uint64_t *chiffresFaux)
@@ -193,8 +192,7 @@ uint64_t rechercheK16(uint64_t chiffreCorrect, uint64_t *chiffresFaux)
 		xor(resultatXorL, juste.LChiffreBin, faux.LChiffreBin, TAILLE_DEMI_BLOC);
 		permutation(LPinverse, resultatXorL, Pinverse, TAILLE_DEMI_BLOC);
 
-		uint8_t bitFaux = bitFaute(juste.RChiffreBin, faux.RChiffreBin);
-
+		uint64_t bitFaux = bitFaute(juste.RChiffreBin, faux.RChiffreBin);
 		permutation(juste.RChiffreBinE, juste.RChiffreBin, E, TAILLE_SOUS_CLE);
 		permutation(faux.RChiffreBinE, faux.RChiffreBin, E, TAILLE_SOUS_CLE);
 
@@ -226,14 +224,14 @@ uint64_t rechercheK16(uint64_t chiffreCorrect, uint64_t *chiffresFaux)
 
 					if(tabEgaux(resLeftJuste, resSbox, 4))
                     {
-						resultat[i / 6][tabEnHex(cle, 6)]++;
+						resultat[i / 6][tabEnUint64(cle, 6)]++;
 					}
 				}
 			}
 		}
 	}
 
-	aRetourne = K16EnHex(resultat);
+	aRetourne = K16EnUint64(resultat);
 
 	return aRetourne;
 }
@@ -252,7 +250,7 @@ void decalageGauche(bool *resultat, bool *tabAshifter, uint8_t nombreShifts, uin
     {
 		if(i < 0)
         {
-			resultat[i+nombreBits] = tabAshifter[i + nombreShifts];
+			resultat[i + nombreBits] = tabAshifter[i + nombreShifts];
 		}
         
         else
@@ -332,8 +330,8 @@ uint64_t fonctionDES(uint64_t clair, uint64_t k64)
 	bool resultatF[TAILLE_DEMI_BLOC] = {0};
 	bool resultatConcat[TAILLE_BLOC] = {0};
 
-	hexEnBin(d.clairBin, clair, BASE);
-	hexEnBin(d.cle64Bin, k64, BASE);
+	uint64EnBin(d.clairBin, clair, BASE);
+	uint64EnBin(d.cle64Bin, k64, BASE);
 	permutation(d.clairBinIP, d.clairBin, IP, TAILLE_BLOC);
 	separationTab(d.clairBinIP, d.L32Bin, d.R32Bin, TAILLE_DEMI_BLOC);
 	generationSousCles(d.sousCles, d.cle64Bin);
@@ -350,7 +348,7 @@ uint64_t fonctionDES(uint64_t clair, uint64_t k64)
 	fusionTab(resultatConcat, d.R32Bin, d.L32Bin, TAILLE_DEMI_BLOC);
 	permutation(d.chiffreBin, resultatConcat, IPinverse, TAILLE_BLOC);
 
-	return tabEnHex(d.chiffreBin, TAILLE_BLOC);
+	return tabEnUint64(d.chiffreBin, TAILLE_BLOC);
 }
 
 uint64_t rechercheK56Bits(uint64_t clair, uint64_t chiffre, uint64_t k16)
@@ -360,7 +358,7 @@ uint64_t rechercheK56Bits(uint64_t clair, uint64_t chiffre, uint64_t k16)
 	initTab(k.cle48Bin,48);
 	initTab(k.cle56Bin,56);
 	initTab(k.cle64Bin,64);
-	hexEnBin(k.cle48Bin,k16,12);
+	uint64EnBin(k.cle48Bin,k16,12);
 	permutation(k.cle56Bin, k.cle48Bin, PC2Inverse, 56);
 	permutation(k.cle64Bin, k.cle56Bin, PC1Inverse, 64);
 
@@ -375,7 +373,7 @@ uint64_t rechercheK56Bits(uint64_t clair, uint64_t chiffre, uint64_t k16)
 			k.cle64Bin[position8bit[j] - 1] = k.cle8Bin[j];
 		}
 
-		uint64_t cle = tabEnHex(k.cle64Bin,64);
+		uint64_t cle = tabEnUint64(k.cle64Bin,64);
 
 		if(chiffre == fonctionDES(clair, cle))
         {
@@ -391,19 +389,7 @@ uint64_t rechercheK(uint64_t clair, uint64_t chiffre, uint64_t k16)
 	int compteur = 0;
 	bool clesB[64] = {0};
 
-	hexEnBin(clesB, rechercheK56Bits(clair, chiffre, k16), BASE);
-
-	for(int i = 0; i < TAILLE_BLOC; i++)
-    {
-		printf("%d", clesB[i]);
-
-		if((i + 1) % 8 == 0)
-        {
-            printf(" ");
-        }
-	}
-
-	printf("\n");
+	uint64EnBin(clesB, rechercheK56Bits(clair, chiffre, k16), BASE);
 
 	for(int i = 1; i < 65; i++)
     {
@@ -428,17 +414,5 @@ uint64_t rechercheK(uint64_t clair, uint64_t chiffre, uint64_t k16)
 		}
 	}
 
-	for(int i = 0; i < TAILLE_BLOC; i++)
-    {
-		printf("%d", clesB[i]);
-
-		if((i + 1) % 8 == 0)
-        {
-            printf(" ");
-        }
-	}
-
-	printf("\n");
-
-	return tabEnHex(clesB, TAILLE_BLOC);
+	return tabEnUint64(clesB, TAILLE_BLOC);
 }
