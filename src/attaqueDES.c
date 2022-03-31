@@ -190,7 +190,7 @@ uint64_t rechercheK16(uint64_t chiffreCorrect, uint64_t *chiffresFaux)
 	return K16EnUint64(resultat);
 }
 
-uint64_t rechercheK56Bits(uint64_t clair, uint64_t chiffre, uint64_t K16)
+uint64_t rechercheK56(uint64_t clair, uint64_t chiffre, uint64_t K16)
 {
 	Cle k;
 
@@ -200,8 +200,6 @@ uint64_t rechercheK56Bits(uint64_t clair, uint64_t chiffre, uint64_t K16)
 	uint64EnBin(k.cle48Bin, K16,12);
 	permutation(k.cle56Bin, k.cle48Bin, PC2Inverse, 56);
 	permutation(k.cle64Bin, k.cle56Bin, PC1Inverse, 64);
-
-	uint8_t position8bit[NOMBRE_SBOXES] = {14, 15, 19, 20, 51, 54, 58, 60};
 
 	for(int i = 0; i < (int)pow((double)2, (double)NOMBRE_SBOXES); i++)
     {
@@ -223,12 +221,12 @@ uint64_t rechercheK56Bits(uint64_t clair, uint64_t chiffre, uint64_t K16)
 	return 0;
 }
 
-uint64_t rechercheK(uint64_t clair, uint64_t chiffre, uint64_t K16)
+uint64_t rechercheK64(uint64_t clair, uint64_t chiffre, uint64_t K56)
 {
 	int compteur = 0;
 	bool clesB[TAILLE_BLOC] = {0};
 
-	uint64EnBin(clesB, rechercheK56Bits(clair, chiffre, K16), BASE);
+	uint64EnBin(clesB, K56, BASE);
 
 	for(int i = 1; i < (TAILLE_BLOC + 1); i++)
     {

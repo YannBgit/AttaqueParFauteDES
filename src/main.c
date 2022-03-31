@@ -23,7 +23,8 @@ int main()
     uint64_t chiffre = extractionDuChiffreBon(fic);             // Chiffré correct
 	uint64_t *chiffresFaux = extractionDesChiffresFaux(fic);    // Tableau des chiffrés faux
     uint64_t K16;                                               // Sous-clé K16
-    uint64_t K;                                                 // Clé maître K
+    uint64_t K56;                                               // Sous-clé K56
+    uint64_t K64;                                               // Clé maître K64
 
     fclose(fic);
 
@@ -37,11 +38,13 @@ int main()
 
     // Calculs
     K16 = rechercheK16(chiffre, chiffresFaux);
-    K = rechercheK(clair, chiffre, K16);
+    K56 = rechercheK56(clair, chiffre, K16);
+    K64 = rechercheK64(clair, chiffre, K56);
 
     // Affichage final
     printf("\nValeur de K16 : %lx\n", K16);
-    printf("Valeur de K : %lx\n", K);
+    printf("Valeur de K56 : %lx\n", K56);
+    printf("Valeur de K64 : %lx\n", K64);
 
     // Fin
     free(chiffresFaux);

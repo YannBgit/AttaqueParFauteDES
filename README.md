@@ -15,3 +15,8 @@ Pour nettoyer le projet des fichiers temporaires :
 ```bash
 	make clean
 ```
+
+Résultats :
+Valeur de K16 : 22a29bd77888
+Valeur de K56 : cd60a664cd0b24c
+Valeur de K64 : dd60b674cd0b34c

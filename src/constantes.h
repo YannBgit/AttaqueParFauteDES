@@ -174,6 +174,9 @@ static const uint8_t PC2Inverse[TAILLE_CLE_MAITRE_SANS_PARITE] =
 	38, 45, 33, 26, 42, 0, 30, 40
 };
 
+static const uint8_t position8bit[NOMBRE_SBOXES] =
+{14, 15, 19, 20, 51, 54, 58, 60};
+
 // Decalage des bits selon le numéro du tour du cadencement de clés
 static const uint8_t V[NOMBRE_SOUS_CLES] =
 {1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
