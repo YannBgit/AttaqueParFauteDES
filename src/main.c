@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-// FONCTIONS
-
 // MAIN
 int main()
 {
@@ -22,7 +20,7 @@ int main()
     }
 
     uint64_t clair = extractionDuClair(fic);                    // Message clair
-    uint64_t chiffre = extractionDuChiffreBon(fic);                // Chiffré correct
+    uint64_t chiffre = extractionDuChiffreBon(fic);             // Chiffré correct
 	uint64_t *chiffresFaux = extractionDesChiffresFaux(fic);    // Tableau des chiffrés faux
     uint64_t K16;                                               // Sous-clé K16
     uint64_t K;                                                 // Clé maître K

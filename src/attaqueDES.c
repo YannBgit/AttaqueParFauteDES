@@ -1,59 +1,20 @@
 // LIBRAIRIES
 #include "attaqueDES.h"
 
-// STRUCTURES
-// Structure représentant les étapes de chiffrement d'un message
-typedef struct message
-{
-	uint64_t chiffreHex;
-	bool chiffreBin[64];
-	bool chiffreBinPermute[64];
-	bool LChiffreBin[32];
-	bool RChiffreBin[32];
-	bool RChiffreBinE[48];
-	bool Sbox6BitsBin[6];
-	bool Sbox6BitsXoreBin[6];
-	bool Sbox4BitsBin[4];
-} Message;
-
-// Structure de stockage des clés
-typedef struct cle
-{
-	bool cle48Bin[48];
-	bool cle56Bin[56];
-	bool cle64Bin[64];
-	bool cle8Bin[8];
-} Cle;
-
-// Structure de stockage des variables nécessaires au déroulement d'un DES
-typedef struct des
-{
-	bool clairBin[64];
-	bool cle64Bin[64];
-	bool clairBinIP[64];
-	bool R32Bin[32];
-	bool L32Bin[32];
-	bool R32BinPlus1[32];
-	bool L32BinPlus1[32];
-	bool R48Bin[48];
-	bool sousCles[16][48];
-	bool chiffreBin[64];
-} DES;
-
 // FONCTIONS
-void uint64ToBin(bool *tabResult, uint64_t hexa, uint8_t nbrHexa)
+void hexEnBin(bool *resultatTab, uint64_t hex, uint8_t nombreBits)
 {
-	uint64_t tmp = hexa;
-	uint64_t entier;
-	uint64_t compteur = nbrHexa * 4 - 1;
+	uint64_t tmp = hex;
+	int entier;
+	int compteur = nombreBits * 4 - 1;
 
-	for(int i = 0; i < nbrHexa; i++)
+	for(int i = 0; i < nombreBits; i++)
     {
 		entier = tmp & 0xF;
 
 		for(int j = 0; j < 4; j++)
         {
-			tabResult[compteur] = entier % 2;
+			resultatTab[compteur] = entier % 2;
 			entier = entier / 2;
 			compteur--;
 		}
@@ -62,86 +23,69 @@ void uint64ToBin(bool *tabResult, uint64_t hexa, uint8_t nbrHexa)
 	}
 }
 
-void decimalTobBin(bool *tabResult, uint64_t decimal, uint8_t nbrBit)
+void decimalEnBin(bool *resultatTab, uint64_t decimal, uint8_t nombreBits)
 {
 	uint64_t entier = decimal;
 
-	for(uint64_t i = nbrBit - 1; i >= 0; i--)
+	for(int i = nombreBits - 1; i >= 0; i--)
     {
-		tabResult[i] = entier % 2;
+		resultatTab[i] = entier % 2;
 		entier = entier / 2;
 	}
 }
 
-uint64_t puissance(uint64_t entier, uint64_t pow)
-{
-	if(pow == 0)
-    {
-		return 1;
-	}
-    
-    else
-    {
-		return entier * puissance(entier, pow - 1);
-	}
-}
-
-uint64_t binToUint64_t(bool *tab, uint8_t nbrBit)
+uint64_t tabEnHex(bool *tab, uint8_t nombreBits)
 {	
 	uint64_t nombre = 0;
-	uint64_t i=0,j=nbrBit-1;
 
-	while(j >= 0)
+	for (int i = 0; i < nombreBits; i++)
     {
-		if(tab[j] != 0)
-        {
-			nombre += puissance(2, i);
+        if (tab[i])
+		{
+			nombre += (uint64_t)pow((double)2, (double)i);
 		}
-
-		i++;
-		j--;
-	}
+    }
 
 	return nombre;
 }
 
-void permutation(bool *resultat, bool *aPermuter, bool *tablePermutation, uint8_t nbrBit)
+void permutation(bool *resultat, bool *aPermute, const uint8_t *matriceP, uint8_t nombreBits)
 {
-	for(int i = 0; i < nbrBit; i++)
+	for(int i = 0; i < nombreBits; i++)
     {
-		if(tablePermutation[i] != 0)
+		if(matriceP[i] != 0)
         {
-			resultat[i] = aPermuter[tablePermutation[i] - 1];
+			resultat[i] = aPermute[matriceP[i] - 1];
 		}
 	}
 }
 
-void separationTab(bool *completTab, bool *leftTab, bool *rightTab, uint8_t nbrBit)
+void separationTab(bool *completTab, bool *LTab, bool *RTab, uint8_t nombreBits)
 {
-	for(int i = 0; i < nbrBit; i++)
+	for(int i = 0; i < nombreBits; i++)
     {
-		leftTab[i] = completTab[i];
-		rightTab[i] = completTab[i + nbrBit];
+		LTab[i] = completTab[i];
+		RTab[i] = completTab[i + nombreBits];
 	}
 }
 
-void xor(bool *tabResult, bool *premierK, bool *deuxiemeK, uint8_t nbrBit)
+void xor(bool *resultatTab, bool *tab1, bool *tab2, uint8_t nombreBits)
 {
-	for(int i = 0; i < nbrBit; i++)
+	for(int i = 0; i < nombreBits; i++)
     {
-		tabResult[i] = premierK[i] ^ deuxiemeK[i];
+		resultatTab[i] = tab1[i] ^ tab2[i];
 	}
 }
 
-uint8_t bitFaute(bool *tabJuste, bool *tabFaux)
+uint8_t bitFaute(bool *correcteTab, bool *fauxTab)
 {
-	bool tabXor[33] = {0};
+	bool xorTab[33] = {0};
 
-	xor(tabXor, tabJuste, tabFaux, TAILLE_DEMI_BLOC);
+	xor(xorTab, correcteTab, fauxTab, TAILLE_DEMI_BLOC);
 
-	for(int j = 0; j < 32; j++)
+	for(int j = 0; j < TAILLE_DEMI_BLOC; j++)
     {
-		if(tabXor[j] == 1)
+		if(xorTab[j] == 1)
         {
 			return j;
 		}
@@ -150,49 +94,49 @@ uint8_t bitFaute(bool *tabJuste, bool *tabFaux)
 	return -1;
 }
 
-void Sboxfonc(bool *resultat, bool *entree, uint8_t numSbox)
+void SboxFonction(bool *resultat, bool *entree, uint8_t numSbox)
 {
-	uint64_t row = 0;
-	uint64_t column = 0;
-	row = entree[0] * 2 + entree[5];
-	uint8_t i = 0, j = 4;
+	int row = entree[0] * 2 + entree[5];
+	int column = 0;
+
+	int i = 0, j = 4;
 
 	while(j > 0)
     {
 		if(entree[j] != 0)
         {
-			column += puissance(2, i);
+			column += (int)pow((double)2, (double)i);
 		}
 
 		i++;
 		j--;
 	}
 
-	uint64_t resultat4bit = Sbox[numSbox][row][column];
+	uint8_t resultat4bit = Sbox[numSbox][row][column];
 
-	hexatobinary(resultat, resultat4bit, 1);
+	hexEnBin(resultat, resultat4bit, 1);
 }
 
-void obtenirR16L16(uint64_t hexa, Message *m)
+void obtenirR16L16(uint64_t hex, Message *m)
 {
-	m->chiffreHex = hexa;
-	uint64ToBinary(m->chiffreBin, hexa, 16);
-	Permutation(m->chiffreBinPermute, m->chiffreBin, IP, 64);
-	separationTab(m->chiffreBinPermute, m->LChiffreBin, m->RChiffreBin, 32);
+	m->chiffreHex = hex;
+	hexEnBin(m->chiffreBin, hex, BASE);
+	permutation(m->chiffreBinPermute, m->chiffreBin, IP, TAILLE_BLOC);
+	separationTab(m->chiffreBinPermute, m->LChiffreBin, m->RChiffreBin, TAILLE_DEMI_BLOC);
 	
 }
 
-void extraire6Bits(Message *m, uint64_t position)
+void extraire6Bits(Message *m, uint8_t position)
 {
-	for(uint64_t i = 0; i < 6; i++)
+	for(int i = 0; i < 6; i++)
     {
 		m->Sbox6BitsBin[i] = m->RChiffreBinE[6 * position + i];
 	}
 }
 
-bool egal(bool *tab1, bool *tab2, uint8_t nbrBit)
+bool tabEgaux(bool *tab1, bool *tab2, uint8_t nombreBits)
 {
-	for(int i = 0; i < nbrBit; i++)
+	for(int i = 0; i < nombreBits; i++)
     {
 		if(tab1[i] != tab2[i])
         {
@@ -203,16 +147,15 @@ bool egal(bool *tab1, bool *tab2, uint8_t nbrBit)
 	return 1;
 }
 
-uint64_t k16enHexa(uint64_t tabK16[8][64])
+uint64_t K16EnHex(int tabK16[8][64])
 {
-	uint64_t resultat = 0;
-	uint64_t tab[8] = {0};
-	uint64_t tabclef[6] = {0};
-	uint64_t tabresult[64] = {0};
+	int tab[8] = {0};
+	bool cles[6] = {0};
+	bool resultatTab[TAILLE_BLOC] = {0};
 
-	for(uint64_t i=0; i<8; i++)
+	for(int i = 0; i < 8; i++)
     {
-		for(uint64_t j=0;j<64;j++)
+		for(int j = 0; j < 64; j++)
         {
 			if(tabK16[i][j] == 6)
             {
@@ -220,167 +163,164 @@ uint64_t k16enHexa(uint64_t tabK16[8][64])
             }
 		}
 
-		pruint64_tf("%d\n", tab[i]);
-		decimaltobinary(tabclef, tab[i], 6);
+		printf("%d\n", tab[i]);
+		decimalEnBin(cles, tab[i], 6);
 
-		for(uint64_t j = 0; j < 6; j++)
+		for(int j = 0; j < 6; j++)
         {
-			tabresult[i * 6 + j] = tabclef[j];
+			resultatTab[i * 6 + j] = cles[j];
 		}
 	}
 
-	resultat = Tabtouint64_t(tabresult, 48);
-
-	return resultat;
+	return tabEnHex(resultatTab, TAILLE_SOUS_CLE);
 }
 
-uint64_t rechercheK16(uint64_t LechiffrerJuste, uint64_t *LeschiffrerFaux)
+uint64_t rechercheK16(uint64_t chiffreCorrect, uint64_t *chiffresFaux)
 {
 	Message juste;
 	Message faux;
-	uint64_t aRetourner = 0;
-	uint64_t resultat[8][64] = {0};
+	uint64_t aRetourne = 0;
+	int resultat[8][TAILLE_BLOC] = {0};
 
-	obtenirR16L16(LechiffrerJuste,&juste);
+	obtenirR16L16(chiffreCorrect, &juste);
 
-	uint64_t leftPmoin1[32] = {0};
-	uint64_t resultatxorLeft[32] = {0};
+	bool LPinverse[TAILLE_DEMI_BLOC] = {0};
+	bool resultatXorL[TAILLE_DEMI_BLOC] = {0};
 
-	for(int w = 0; w < 32; w++)
+	for(int w = 0; w < TAILLE_DEMI_BLOC; w++)
     {
-		obtenirR16L16(LeschiffrerFaux[w],&faux);
-		xor(resultatxorLeft, juste.LChiffreBin, faux.LChiffreBin, 32);
-		Permutation(leftPmoin1, resultatxorLeft, Pinverse, 32);
+		obtenirR16L16(chiffresFaux[w], &faux);
+		xor(resultatXorL, juste.LChiffreBin, faux.LChiffreBin, TAILLE_DEMI_BLOC);
+		permutation(LPinverse, resultatXorL, Pinverse, TAILLE_DEMI_BLOC);
 
-		uint64_t bitfaux = bitFauter(juste.RChiffreBin, faux.RChiffreBin);
+		uint8_t bitFaux = bitFaute(juste.RChiffreBin, faux.RChiffreBin);
 
-		Permutation(juste.RChiffreBinE, juste.RChiffreBin, E, 48);
-		Permutation(faux.RChiffreBinE, faux.RChiffreBin, E, 48);
+		permutation(juste.RChiffreBinE, juste.RChiffreBin, E, TAILLE_SOUS_CLE);
+		permutation(faux.RChiffreBinE, faux.RChiffreBin, E, TAILLE_SOUS_CLE);
 
-		uint64_t resSbox[4] = {0};
-		uint64_t resLeftJuste[4] = {0};
-		uint64_t cle[6] = {0};
+		bool resSbox[4] = {0};
+		bool resLeftJuste[4] = {0};
+		bool cle[6] = {0};
 
-		for(int i = 0;  i < 48; i++)
+		for(int i = 0;  i < TAILLE_SOUS_CLE; i++)
         {
-			if(E[i] == (bitfaux + 1))
+			if(E[i] == (bitFaux + 1))
             {
-				extraire6Bits(&juste, i/6);
-				extraire6Bits(&faux, i/6);
+				extraire6Bits(&juste, i / 6);
+				extraire6Bits(&faux, i / 6);
 
 				for(int y = 0; y < 4; y++)
                 {
-					resLeftJuste[y] = leftPmoin1[4*(i/6)+y];
+					resLeftJuste[y] = LPinverse[4 * (i / 6) + y];
 				}
 
-				for(int j = 0;  j < 64; j++)
+				for(int j = 0;  j < TAILLE_BLOC; j++)
                 {
-					decimalToBin(cle, j, 6);
+					decimalEnBin(cle, j, 6);
 					xor(juste.Sbox6BitsXoreBin, juste.Sbox6BitsBin, cle, 6);
-					decimalToBin(cle, j, 6);
+					decimalEnBin(cle, j, 6);
 					xor(faux.Sbox6BitsXoreBin, faux.Sbox6BitsBin, cle, 6);
-					Sboxfonc(juste.Sbox4BitsBin, juste.Sbox6BitsXoreBin, i/6);
-					Sboxfonc(faux.Sbox4BitsBin, faux.Sbox6BitsXoreBin, i/6);
+					SboxFonction(juste.Sbox4BitsBin, juste.Sbox6BitsXoreBin, i/6);
+					SboxFonction(faux.Sbox4BitsBin, faux.Sbox6BitsXoreBin, i/6);
 					xor(resSbox,juste.Sbox4BitsBin, faux.Sbox4BitsBin, 4);
 
-					if(egal(resLeftJuste, resSbox,4))
+					if(tabEgaux(resLeftJuste, resSbox, 4))
                     {
-						resultat[i/6][Tabtouint64_t(cle,6)]++;
+						resultat[i / 6][tabEnHex(cle, 6)]++;
 					}
 				}
 			}
 		}
 	}
 
-	aRetourner = k16enHexa(resultat);
+	aRetourne = K16EnHex(resultat);
 
-	return aRetourner;
+	return aRetourne;
 }
 
-void initTab(bool *tab, uint8_t nbrBit)
+void initTab(bool *tab, uint8_t nombreBits)
 {
-	for(uint64_t i = 0; i < nbrBit; i++)
+	for(int i = 0; i < nombreBits; i++)
     {
 		tab[i] = 0;
 	}
 }
 
-void shiftGauche(uint64_t *resultat, uint64_t *tabAshifter, uint64_t nbrShift, uint64_t nbrBit)
+void decalageGauche(bool *resultat, bool *tabAshifter, uint8_t nombreShifts, uint8_t nombreBits)
 {
-	for(int i = -nbrShift; i < (nbrBit - nbrShift); i++)
+	for(int i = -nombreShifts; i < (nombreBits - nombreShifts); i++)
     {
 		if(i < 0)
         {
-			resultat[i+nbrBit] = tabAshifter[i + nbrShift];
+			resultat[i+nombreBits] = tabAshifter[i + nombreShifts];
 		}
         
         else
         {
-			resultat[i] = tabAshifter[i + nbrShift];	
+			resultat[i] = tabAshifter[i + nombreShifts];	
 		}
 	}
 }
 
-void fusionTab(uint64_t *resultat, uint64_t *leftTab, uint64_t *rightTab, uint64_t nbrBit)
+void fusionTab(bool *resultat, bool *LTab, bool *RTab, uint8_t nombreBits)
 {
-	for(int i = 0; i < nbrBit; i++)
+	for(int i = 0; i < nombreBits; i++)
     {
-		resultat[i] = leftTab[i];
-		resultat[i+nbrBit] = rightTab[i];
+		resultat[i] = LTab[i];
+		resultat[i + nombreBits] = RTab[i];
 	}
 }
 
-void generationSubcle(uint64_t Les16Subcle[][48], uint64_t *cle64Bit)
+void generationSousCles(bool sousCles[][TAILLE_SOUS_CLE], bool *cle64Bits)
 {
-	uint64_t cle56Bin[56] = {0};
-	uint64_t cle48Bin[48] = {0};
-	uint64_t tabSplit[2][28] = {0};
-	uint64_t tabSplitRes[2][28] = {0};
+	bool cle56Bin[TAILLE_CLE_MAITRE_SANS_PARITE] = {0};
+	bool tabSepare[2][28] = {0};
+	bool tabSepareRes[2][28] = {0};
 
-	Permutation(cle56Bin, cle64Bit, PC1, 56);
+	permutation(cle56Bin, cle64Bits, PC1, TAILLE_CLE_MAITRE_SANS_PARITE);
 
 	for(int i = 0; i < 16; i++)
     {
-		splitTab(cle56Bin,tabSplit[0],tabSplit[1], 28);
-		shiftGauche(tabSplitRes[0], tabSplit[0], v[i], 28);
-		shiftGauche(tabSplitRes[1], tabSplit[1], v[i], 28);
-		fusionTab(cle56Bin, tabSplitRes[0], tabSplitRes[1], 28);
-		Permutation(Les16Subcle[i], cle56Bin, PC2, 48);
+		separationTab(cle56Bin,tabSepare[0],tabSepare[1], 28);
+		decalageGauche(tabSepareRes[0], tabSepare[0], V[i], 28);
+		decalageGauche(tabSepareRes[1], tabSepare[1], V[i], 28);
+		fusionTab(cle56Bin, tabSepareRes[0], tabSepareRes[1], 28);
+		permutation(sousCles[i], cle56Bin, PC2, TAILLE_CLE_MAITRE_SANS_PARITE);
 	}
 }
 
-void f(uint64_t *resultat, uint64_t *Ri, uint64_t *Ki)
+void F(bool *resultat, bool *Ri, bool *Ki)
 {
-	uint64_t right48b[48] = {0};
-	uint64_t resultatXor[48] = {0};
-	uint64_t entrerSbox[6] = {0};
-	uint64_t sortiSbox[4] = {0};
-	uint64_t sorti32bit[32] = {0};
+	bool R48B[48] = {0};
+	bool resultatXor[TAILLE_SOUS_CLE] = {0};
+	bool entrerSbox[6] = {0};
+	bool sortieSbox[4] = {0};
+	bool sortie32Bin[TAILLE_DEMI_BLOC] = {0};
 
-	Permutation(right48b,Ri, E, 48);
-	xor(resultatXor, right48b, Ki, 48);
+	permutation(R48B, Ri, E, TAILLE_SOUS_CLE);
+	xor(resultatXor, R48B, Ki, TAILLE_SOUS_CLE);
 
-	for(int j = 0; j < 8; j++)
+	for(int i = 0; i < 8; i++)
     {
-		for(int i = 0; i < 6; i++)
+		for(int j = 0; j < 6; j++)
         {
-			entrerSbox[i] = resultatXor[6 * j + i];
+			entrerSbox[j] = resultatXor[6 * i + j];
 		}
 
-		Sboxfonc(sortiSbox, entrerSbox, j);
+		SboxFonction(sortieSbox, entrerSbox, i);
 
-		for(int i = 0; i < 4; i++)
+		for(int j = 0; j < 4; j++)
         {
-			sorti32bit[j * 4 + i] = sortiSbox[i];
+			sortie32Bin[i * 4 + j] = sortieSbox[j];
 		}
 	}
 
-	Permutation(resultat, sorti32bit, P, 32);
+	permutation(resultat, sortie32Bin, P, TAILLE_DEMI_BLOC);
 }
 
-void copieTab(uint64_t *resultat, uint64_t * aCopier, uint64_t nbrBit)
+void copieTab(bool *resultat, bool *aCopier, uint8_t nombreBits)
 {
-	for(uint64_t i=0; i<nbrBit; i++)
+	for(int i = 0; i < nombreBits; i++)
     {
 		resultat[i] = aCopier[i];
 	}
@@ -389,77 +329,75 @@ void copieTab(uint64_t *resultat, uint64_t * aCopier, uint64_t nbrBit)
 uint64_t fonctionDES(uint64_t clair, uint64_t k64)
 {
 	DES d;
-	uint64_t resultatF[32] = {0};
-	uint64_t resultatConcat[64] = {0};
+	bool resultatF[TAILLE_DEMI_BLOC] = {0};
+	bool resultatConcat[TAILLE_BLOC] = {0};
 
-	hexatobinary(d.clairBin, clair, 16);
-	hexatobinary(d.cle64Bin, k64, 16);
-	Permutation(d.clairBinIP, d.clairBin, IP, 64);
-	splitTab(d.clairBinIP, d.L32Bin, d.R32Bin, 32);
-	generationSubcle(d.sousCles, d.cle64Bin);
+	hexEnBin(d.clairBin, clair, BASE);
+	hexEnBin(d.cle64Bin, k64, BASE);
+	permutation(d.clairBinIP, d.clairBin, IP, TAILLE_BLOC);
+	separationTab(d.clairBinIP, d.L32Bin, d.R32Bin, TAILLE_DEMI_BLOC);
+	generationSousCles(d.sousCles, d.cle64Bin);
 
-	for(uint64_t i = 0; i < 16; i++)
+	for(int i = 0; i < 16; i++)
     {
-		copieTab(d.L32BinPlus1, d.R32Bin, 32);
-		f(resultatF, d.R32Bin, d.sousCles[i]);
-		xor(d.R32BinPlus1, d.L32Bin, resultatF, 32);
-		copieTab(d.L32Bin, d.L32BinPlus1, 32);
-		copieTab(d.R32Bin, d.R32BinPlus1, 32);
+		copieTab(d.L32BinPlus1, d.R32Bin, TAILLE_DEMI_BLOC);
+		F(resultatF, d.R32Bin, d.sousCles[i]);
+		xor(d.R32BinPlus1, d.L32Bin, resultatF, TAILLE_DEMI_BLOC);
+		copieTab(d.L32Bin, d.L32BinPlus1, TAILLE_DEMI_BLOC);
+		copieTab(d.R32Bin, d.R32BinPlus1, TAILLE_DEMI_BLOC);
 	}
-	fusionTab(resultatConcat, d.R32Bin, d.L32Bin, 32);
-	Permutation(d.chiffreBin, resultatConcat, IPinverse, 64);
 
-	return TabToUint64_t(d.chiffreBin,64);
+	fusionTab(resultatConcat, d.R32Bin, d.L32Bin, TAILLE_DEMI_BLOC);
+	permutation(d.chiffreBin, resultatConcat, IPinverse, TAILLE_BLOC);
+
+	return tabEnHex(d.chiffreBin, TAILLE_BLOC);
 }
 
-uint64_t K56bits(uint64_t clair, uint64_t chiffrer, uint64_t k16)
+uint64_t rechercheK56Bits(uint64_t clair, uint64_t chiffre, uint64_t k16)
 {
 	Cle k;
 
 	initTab(k.cle48Bin,48);
 	initTab(k.cle56Bin,56);
 	initTab(k.cle64Bin,64);
-	hexatobinary(k.cle48Bin,k16,12);
-	Permutation(k.cle56Bin, k.cle48Bin, PC2Inverse, 56);
-	Permutation(k.cle64Bin, k.cle56Bin, PC1Inverse, 64);
+	hexEnBin(k.cle48Bin,k16,12);
+	permutation(k.cle56Bin, k.cle48Bin, PC2Inverse, 56);
+	permutation(k.cle64Bin, k.cle56Bin, PC1Inverse, 64);
 
-	uint64_t position8bit[8] = {14,15,19,20,51,54,58,60};
-	uint64_t i=0;
+	uint8_t position8bit[8] = {14, 15, 19, 20, 51, 54, 58, 60};
 
-	while(i < 256)
+	for(int i = 0; i < 256; i++)
     {
-		decimaltobinary(k.cle8Bin, i, 8);
+		decimalEnBin(k.cle8Bin, i, 8);
 
 		for(int j = 0; j < 8; j++)
         {
 			k.cle64Bin[position8bit[j] - 1] = k.cle8Bin[j];
 		}
 
-		uint64_t cle = TabToUint64_t(k.cle64Bin,64);
+		uint64_t cle = tabEnHex(k.cle64Bin,64);
 
-		if(chiffrer == fonctionDES(clair, cle))
+		if(chiffre == fonctionDES(clair, cle))
         {
 			return cle;
 		}
-
-		i++;
 	}
 
 	return 0;
 }
 
-uint64_t rechercheK(uint64_t clair, uint64_t chiffrer, uint64_t k16)
+uint64_t rechercheK(uint64_t clair, uint64_t chiffre, uint64_t k16)
 {
-	uint64_t compteur = 0;
-	uint64_t tabClefB[64] = {0};
+	int compteur = 0;
+	bool clesB[64] = {0};
 
-	hexatobinary(tabClefB, getK56bit(clair, chiffrer, k16), 16);
+	hexEnBin(clesB, rechercheK56Bits(clair, chiffre, k16), BASE);
 
-	for(int i = 0; i < 64; i++)
+	for(int i = 0; i < TAILLE_BLOC; i++)
     {
-		printf("%d", tabClefB[i]);
+		printf("%d", clesB[i]);
 
-		if((i+1)%8 == 0)
+		if((i + 1) % 8 == 0)
         {
             printf(" ");
         }
@@ -469,16 +407,16 @@ uint64_t rechercheK(uint64_t clair, uint64_t chiffrer, uint64_t k16)
 
 	for(int i = 1; i < 65; i++)
     {
-		if((i%8) == 0)
+		if((i % 8) == 0)
         {
-			if(compteur%2 == 1)
+			if(compteur % 2 == 1)
             {
-				tabClefB[i-1] = 0;
+				clesB[i - 1] = 0;
 			}
             
             else
             {
-				tabClefB[i-1] = 1;
+				clesB[i - 1] = 1;
 			}
 
 			compteur = 0;
@@ -486,15 +424,15 @@ uint64_t rechercheK(uint64_t clair, uint64_t chiffrer, uint64_t k16)
         
         else
         {
-			compteur += tabClefB[i - 1];
+			compteur += clesB[i - 1];
 		}
 	}
 
-	for(int i = 0; i < 64; i++)
+	for(int i = 0; i < TAILLE_BLOC; i++)
     {
-		printf("%d", tabClefB[i]);
+		printf("%d", clesB[i]);
 
-		if((i+1)%8 == 0)
+		if((i + 1) % 8 == 0)
         {
             printf(" ");
         }
@@ -502,5 +440,5 @@ uint64_t rechercheK(uint64_t clair, uint64_t chiffrer, uint64_t k16)
 
 	printf("\n");
 
-	return Tabtouint64_t(tabClefB, 64);
+	return tabEnHex(clesB, TAILLE_BLOC);
 }

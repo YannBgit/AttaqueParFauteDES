@@ -3,9 +3,9 @@
 
 // FONCTIONS
 
-unsigned long int extractionDuClair(FILE *fic)
+uint64_t extractionDuClair(FILE *fic)
 {
-    unsigned long int clair = 0x0a;
+    uint64_t clair = 0x0a;
 
     char *line = NULL;
     size_t n = 0;
@@ -31,10 +31,9 @@ unsigned long int extractionDuClair(FILE *fic)
     return clair;
 }
 
-unsigned long int extractionDuChiffreBon(FILE *fic)
+uint64_t extractionDuChiffreBon(FILE *fic)
 {
-    unsigned long int chiffreBon = 0x0;
-
+    uint64_t chiffreBon = 0x0;
     char *line = NULL;
     size_t n = 0;
     int trigger = 0;
@@ -59,10 +58,9 @@ unsigned long int extractionDuChiffreBon(FILE *fic)
     return chiffreBon;
 }
 
-unsigned long int *extractionDesChiffresFaux(FILE *fic)
+uint64_t *extractionDesChiffresFaux(FILE *fic)
 {
-    unsigned long int *chiffresFaux = malloc(sizeof(unsigned long int) * NOMBRE_CHIFFRES_FAUX);
-
+    uint64_t *chiffresFaux = malloc(sizeof(uint64_t) * NOMBRE_CHIFFRES_FAUX);
     char *line = NULL;
     size_t n = 0;
     int trigger = 0;

@@ -11,6 +11,7 @@ CC = gcc
 
 ### Flags ###
 CFLAGS = -O3 -Wall -g
+MATH = -lm
 
 ### run ###
 run: dir compile
@@ -20,7 +21,7 @@ dir:
 	mkdir -p $(TRG_DIR)
 
 compile:
-	$(CC) $(CFLAGS) $(SRC) -o $(TRG)
+	$(CC) $(CFLAGS) $(SRC) -o $(TRG) $(MATH)
 
 ### Suppression du répertoire cible ###
 clean:
