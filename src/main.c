@@ -10,7 +10,7 @@
 int main()
 {
     // Initialisation des variables
-    FILE *fic = fopen("resources/data.txt", "r");
+    FILE *fic = fopen("ressources/data.txt", "r");
 
     if(fic == NULL)
     {
