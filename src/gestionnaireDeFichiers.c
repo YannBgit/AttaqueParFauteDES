@@ -2,7 +2,6 @@
 #include "gestionnaireDeFichiers.h"
 
 // FONCTIONS
-
 uint64_t extractionDuClair(FILE *fic)
 {
     uint64_t clair = 0x0a;
